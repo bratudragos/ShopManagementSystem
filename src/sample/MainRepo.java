@@ -111,6 +111,7 @@ public class MainRepo {
 
     public Product getProductById(int idProduct) throws SQLException{
         PreparedStatement preparedStatement = getDbConnection().prepareStatement(GET_PRODUCT_BY_ID);
+        preparedStatement.setInt(1,idProduct);
         ResultSet rs = preparedStatement.executeQuery();
         String nameProduct = rs.getString(1);
         Float priceProduct=rs.getFloat(2);
@@ -118,10 +119,14 @@ public class MainRepo {
         return new Product(nameProduct,priceProduct,quantityProduct);
     }
 
-    public boolean getProductByName(String nameProduct) throws SQLException{
+    public Product getProductByName(String nameProduct) throws SQLException{
         PreparedStatement preparedStatement = getDbConnection().prepareStatement(GET_PRODUCT_BY_NAME);
         preparedStatement.setString(1,nameProduct);
-        return preparedStatement.executeUpdate() > 0;
+        ResultSet rs = preparedStatement.executeQuery();
+        nameProduct = rs.getString(1);
+        Float priceProduct=rs.getFloat(2);
+        Float quantityProduct=rs.getFloat(3);
+        return new Product(nameProduct,priceProduct,quantityProduct);
     }
 
     public boolean getAdditionById(int idAddition) throws SQLException{
@@ -205,10 +210,10 @@ public class MainRepo {
         preparedStatement.setFloat(1,priceProductNew);
         preparedStatement.setInt(2,idProduct);
         ////todo automatic total update
-        Boolean updateOk=preparedStatement.executeUpdate()>0;
+        boolean updateOk=preparedStatement.executeUpdate()>0;
         Product product = getProductById(idProduct);
-
-        //changeProductTotalById(idProduct,product.g);
+        changeProductTotalById(idProduct,product.getTotal());
+        return updateOk && preparedStatement.executeUpdate()>0;
     }
 
     public boolean changeProductQuantityById(int idProduct,int quantityProductNew) throws SQLException{
@@ -216,10 +221,13 @@ public class MainRepo {
         preparedStatement.setFloat(1,quantityProductNew);
         preparedStatement.setInt(2,idProduct);
         //todo automatic total update
-        return preparedStatement.executeUpdate()>0;
+        boolean updateOk=preparedStatement.executeUpdate()>0;
+        Product product = getProductById(idProduct);
+        changeProductTotalById(idProduct,product.getTotal());
+        return updateOk && preparedStatement.executeUpdate()>0;
     }
 
-    public boolean changeProductTotalById(int idProduct,int totalProductNew) throws SQLException{
+    public boolean changeProductTotalById(int idProduct,float totalProductNew) throws SQLException{
         PreparedStatement preparedStatement = getDbConnection().prepareStatement(CHANGE_PRODUCT_TOTAL_BY_ID);
         preparedStatement.setFloat(1,totalProductNew);
         preparedStatement.setInt(2,idProduct);
@@ -238,7 +246,10 @@ public class MainRepo {
         preparedStatement.setFloat(1,priceProductNew);
         preparedStatement.setString(2,nameProduct);
         //todo automatic total update
-        return preparedStatement.executeUpdate()>0;
+        boolean updateOk=preparedStatement.executeUpdate()>0;
+        Product product = getProductByName(nameProduct);
+        changeProductTotalByName(nameProduct,product.getTotal());
+        return updateOk && preparedStatement.executeUpdate()>0;
     }
 
     public boolean changeProductQuantityByName(String nameProduct,int quantityProductNew) throws SQLException{
@@ -246,10 +257,13 @@ public class MainRepo {
         preparedStatement.setFloat(1,quantityProductNew);
         preparedStatement.setString(2,nameProduct);
         //todo automatic total update
-        return preparedStatement.executeUpdate()>0;
+        boolean updateOk=preparedStatement.executeUpdate()>0;
+        Product product = getProductByName(nameProduct);
+        changeProductTotalByName(nameProduct,product.getTotal());
+        return updateOk && preparedStatement.executeUpdate()>0;
     }
 
-    public boolean changeProductTotalByName(String nameProduct,int totalProductNew) throws SQLException{
+    public boolean changeProductTotalByName(String nameProduct,float totalProductNew) throws SQLException{
         PreparedStatement preparedStatement = getDbConnection().prepareStatement(CHANGE_PRODUCT_TOTAL_BY_NAME);
         preparedStatement.setFloat(1,totalProductNew);
         preparedStatement.setString(2,nameProduct);
